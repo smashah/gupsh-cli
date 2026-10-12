@@ -10,7 +10,7 @@ gupsh auth login --api-url https://api.gupsh.app/api/v1
 Each profile can target an environment:
 
 ```bash
-gupsh profile add local --api-url http://localhost:8600/api/v1 --dashboard-url http://localhost:8603/ \
+gupsh profile add local --api-url http://localhost:8600/api/v1 --dashboard-url http://localhost:8602/marketing/overview \
   --publishable-key "$PK" --secret-key "$SK" --site-uuid "$SITE"
 gupsh profile add prod --publishable-key "$PK" --secret-key "$SK" --site-uuid "$SITE"
 gupsh profile use local
