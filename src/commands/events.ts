@@ -2,7 +2,7 @@
  * Events commands
  *
  * Commands:
- * - bento events track --email <email> --event <name> [--details <json>] - Track a custom event
+ * - gupsh events track --email <email> --event <name> [--details <json>] - Track a custom event
  */
 
 import { Command } from "commander";

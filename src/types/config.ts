@@ -6,6 +6,8 @@ export interface BentoProfile {
   publishableKey: string;
   secretKey: string;
   siteUuid: string;
+  apiBaseUrl?: string;
+  dashboardUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

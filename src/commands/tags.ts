@@ -2,9 +2,9 @@
  * Tag management commands
  *
  * Commands:
- * - bento tags list - List all tags
- * - bento tags create <name> - Create a new tag
- * - bento tags delete <name> - Delete a tag (dangerous, requires confirmation)
+ * - gupsh tags list - List all tags
+ * - gupsh tags create <name> - Create a new tag
+ * - gupsh tags delete <name> - Delete a tag (dangerous, requires confirmation)
  */
 
 import type { Command } from "commander";
@@ -36,7 +36,7 @@ export function registerTagsCommands(program: Command): void {
               meta: { count: 0 },
             });
           } else {
-            output.info("No tags found. Create one with `bento tags create <name>`");
+            output.info("No tags found. Create one with `gupsh tags create <name>`");
           }
           return;
         }

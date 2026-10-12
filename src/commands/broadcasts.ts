@@ -2,8 +2,8 @@
  * Broadcasts commands
  *
  * Commands:
- * - bento broadcasts list - List all broadcasts
- * - bento broadcasts create --name <n> --subject <s> [options] - Create a new broadcast draft
+ * - gupsh broadcasts list - List all broadcasts
+ * - gupsh broadcasts create --name <n> --subject <s> [options] - Create a new broadcast draft
  */
 
 import { Command } from "commander";

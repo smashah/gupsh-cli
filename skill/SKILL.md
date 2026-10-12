@@ -1,19 +1,19 @@
 ---
-name: bento-cli
+name: gupsh-cli
 description: >
-  Guide for using Bento CLI to manage email marketing operations.
-  Use when running bento commands, managing subscribers, tags, events,
-  or automating email marketing workflows. Triggers on: bento CLI usage,
+  Guide for using gupsh CLI to manage email marketing operations.
+  Use when running gupsh commands, managing subscribers, tags, events,
+  or automating email marketing workflows. Triggers on: gupsh CLI usage,
   subscriber management, email list operations, CSV imports.
 ---
 
-# Bento CLI
+# gupsh CLI
 
-A command-line interface for [Bento](https://bentonow.com) email marketing. Manage subscribers, tags, events, and broadcasts directly from the terminal.
+A command-line interface for [gupsh](https://gupsh.app) email marketing. Manage subscribers, tags, events, and broadcasts directly from the terminal.
 
 ## Philosophy: Safety-First Automation
 
-Email operations affect real people. A bulk operation mistake can unsubscribe thousands or spam your entire list. The Bento CLI is designed with **safety-first automation** in mind.
+Email operations affect real people. A bulk operation mistake can unsubscribe thousands or spam your entire list. The gupsh CLI is designed with **safety-first automation** in mind.
 
 **Before running any command, ask**:
 - Is this a bulk operation? If yes, use `--dry-run` first
@@ -33,80 +33,80 @@ Email operations affect real people. A bulk operation mistake can unsubscribe th
 
 ```bash
 # Interactive login (prompts for credentials)
-bento auth login
+gupsh auth login
 
 # Non-interactive login (for CI/scripts)
-bento auth login \
+gupsh auth login \
   --publishable-key "your-publishable-key" \
   --secret-key "your-secret-key" \
   --site-uuid "your-site-uuid"
 
 # Check authentication status
-bento auth status
+gupsh auth status
 
 # Log out (removes stored credentials)
-bento auth logout
+gupsh auth logout
 ```
 
-**Credentials**: Get from [Settings > Teams](https://app.bentonow.com/account/teams) in Bento dashboard.
+**Credentials**: Get from [Settings > Teams](https://app.gupsh.app/marketing/settings) in gupsh dashboard.
 
 ### Profile Management
 
-Manage multiple Bento accounts (production, staging, etc.):
+Manage multiple gupsh accounts (production, staging, etc.):
 
 ```bash
-bento profile add production    # Add named profile
-bento profile add staging
-bento profile use staging       # Switch active profile
-bento profile list              # List all profiles
-bento profile remove staging    # Remove a profile
+gupsh profile add production    # Add named profile
+gupsh profile add staging
+gupsh profile use staging       # Switch active profile
+gupsh profile list              # List all profiles
+gupsh profile remove staging    # Remove a profile
 ```
 
 ### Subscribers
 
 **Search subscribers**:
 ```bash
-bento subscribers search --email user@example.com
-bento subscribers search --tag vip
-bento subscribers search --field plan=pro
-bento subscribers search --tag active --page 2 --per-page 50
+gupsh subscribers search --email user@example.com
+gupsh subscribers search --tag vip
+gupsh subscribers search --field plan=pro
+gupsh subscribers search --tag active --page 2 --per-page 50
 ```
 
 **Import from CSV** (requires `email` column):
 ```bash
-bento subscribers import contacts.csv                    # Interactive
-bento subscribers import contacts.csv --dry-run          # Preview only
-bento subscribers import contacts.csv --limit 100        # First 100 rows
-bento subscribers import contacts.csv --confirm          # Non-interactive
+gupsh subscribers import contacts.csv                    # Interactive
+gupsh subscribers import contacts.csv --dry-run          # Preview only
+gupsh subscribers import contacts.csv --limit 100        # First 100 rows
+gupsh subscribers import contacts.csv --confirm          # Non-interactive
 ```
 
 **Manage tags on subscribers**:
 ```bash
-bento subscribers tag --email user@example.com --add vip
-bento subscribers tag --email user@example.com --remove trial
-bento subscribers tag --file users.csv --add customer,active --confirm
+gupsh subscribers tag --email user@example.com --add vip
+gupsh subscribers tag --email user@example.com --remove trial
+gupsh subscribers tag --file users.csv --add customer,active --confirm
 ```
 
 **Subscription management**:
 ```bash
-bento subscribers unsubscribe --email user@example.com
-bento subscribers unsubscribe --file unsubscribes.csv --confirm
-bento subscribers subscribe --email user@example.com     # Re-subscribe
+gupsh subscribers unsubscribe --email user@example.com
+gupsh subscribers unsubscribe --file unsubscribes.csv --confirm
+gupsh subscribers subscribe --email user@example.com     # Re-subscribe
 ```
 
 ### Tags
 
 ```bash
-bento tags list                           # List all tags
-bento tags create "new-feature-announcement"  # Create tag
-bento tags delete "old-tag"               # Delete (API limitation applies)
+gupsh tags list                           # List all tags
+gupsh tags create "new-feature-announcement"  # Create tag
+gupsh tags delete "old-tag"               # Delete (API limitation applies)
 ```
 
 ### Custom Fields
 
 ```bash
-bento fields list                         # List all fields
-bento fields create company_size          # Create field
+gupsh fields list                         # List all fields
+gupsh fields create company_size          # Create field
 ```
 
 ### Events
@@ -114,9 +114,9 @@ bento fields create company_size          # Create field
 Track custom events to trigger automations:
 
 ```bash
-bento events track --email user@example.com --event signed_up
+gupsh events track --email user@example.com --event signed_up
 
-bento events track \
+gupsh events track \
   --email user@example.com \
   --event purchase \
   --details '{"product": "Pro Plan", "amount": 99}'
@@ -125,9 +125,9 @@ bento events track \
 ### Broadcasts
 
 ```bash
-bento broadcasts list                     # List all broadcasts
+gupsh broadcasts list                     # List all broadcasts
 
-bento broadcasts create \
+gupsh broadcasts create \
   --name "January Newsletter" \
   --subject "What's new this month" \
   --content "<h1>Hello!</h1><p>Here's our update...</p>" \
@@ -138,7 +138,7 @@ bento broadcasts create \
 ### Statistics
 
 ```bash
-bento stats site                          # View site-wide stats
+gupsh stats site                          # View site-wide stats
 ```
 
 ## Safety Flags
@@ -211,48 +211,48 @@ Or one email per line (no header).
 | `BENTO_CONFIG_PATH` | Override config file location |
 | `BENTO_API_BASE_URL` | Override API endpoint (testing) |
 | `BENTO_AUTO_CONFIRM` | Set `true` to skip all confirmations |
-| `DEBUG` | Set `bento` for verbose SDK logging |
+| `DEBUG` | Set `gupsh` for verbose SDK logging |
 
 ## Anti-Patterns to Avoid
 
 **Running bulk operations without preview**:
 ```bash
 # BAD: Direct import without testing
-bento subscribers import huge-list.csv --confirm
+gupsh subscribers import huge-list.csv --confirm
 
 # GOOD: Preview first, then limit test, then full import
-bento subscribers import huge-list.csv --dry-run
-bento subscribers import huge-list.csv --limit 10 --confirm
-bento subscribers import huge-list.csv --confirm
+gupsh subscribers import huge-list.csv --dry-run
+gupsh subscribers import huge-list.csv --limit 10 --confirm
+gupsh subscribers import huge-list.csv --confirm
 ```
 
 **Forgetting --confirm in scripts**:
 ```bash
 # BAD: Will hang waiting for input in CI
-bento subscribers tag --file users.csv --add vip
+gupsh subscribers tag --file users.csv --add vip
 
 # GOOD: Explicit confirmation for automation
-bento subscribers tag --file users.csv --add vip --confirm
+gupsh subscribers tag --file users.csv --add vip --confirm
 ```
 
 **Not using --json for scripting**:
 ```bash
 # BAD: Parsing human-readable tables
-bento subscribers search --tag vip | grep email
+gupsh subscribers search --tag vip | grep email
 
 # GOOD: Structured JSON output
-bento subscribers search --tag vip --json | jq '.data[].email'
+gupsh subscribers search --tag vip --json | jq '.data[].email'
 ```
 
 **Running destructive operations without understanding scope**:
 ```bash
 # BAD: Unsubscribe operation on unclear file
-bento subscribers unsubscribe --file list.csv --confirm
+gupsh subscribers unsubscribe --file list.csv --confirm
 
 # GOOD: Preview the file contents first
 head -20 list.csv
 wc -l list.csv
-bento subscribers unsubscribe --file list.csv --dry-run
+gupsh subscribers unsubscribe --file list.csv --dry-run
 ```
 
 ## Common Workflows
@@ -262,28 +262,28 @@ bento subscribers unsubscribe --file list.csv --dry-run
 psql -c "COPY (SELECT email, name FROM users WHERE active) TO STDOUT CSV HEADER" \
   > /tmp/active-users.csv
 
-bento subscribers import /tmp/active-users.csv --confirm --json
+gupsh subscribers import /tmp/active-users.csv --confirm --json
 ```
 
 ### Scripting: Batch tag operations
 ```bash
-bento subscribers search --tag inactive --json \
+gupsh subscribers search --tag inactive --json \
   | jq -r '.data[].email' \
   | while read email; do
-      bento subscribers tag --email "$email" --add "needs-reengagement" --confirm
+      gupsh subscribers tag --email "$email" --add "needs-reengagement" --confirm
     done
 ```
 
 ### Testing: Safe import validation
 ```bash
 # 1. Validate CSV format
-bento subscribers import contacts.csv --dry-run
+gupsh subscribers import contacts.csv --dry-run
 
 # 2. Test with small batch
-bento subscribers import contacts.csv --limit 5 --confirm
+gupsh subscribers import contacts.csv --limit 5 --confirm
 
 # 3. Full import
-bento subscribers import contacts.csv --confirm
+gupsh subscribers import contacts.csv --confirm
 ```
 
 ## Running Tests
@@ -295,6 +295,6 @@ bun test src/tests/commands/tags.test.ts   # Run specific test file
 
 ## Remember
 
-The Bento CLI gives you direct access to operations that affect real subscribers. The safety flags exist because mistakes are costly. Use `--dry-run` and `--limit` liberally. When in doubt, preview first.
+The gupsh CLI gives you direct access to operations that affect real subscribers. The safety flags exist because mistakes are costly. Use `--dry-run` and `--limit` liberally. When in doubt, preview first.
 
 For complex automation, prefer `--json` output and proper error handling over parsing human-readable tables.

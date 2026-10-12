@@ -2,7 +2,7 @@
  * Stats commands
  *
  * Commands:
- * - bento stats site - Show site-wide statistics
+ * - gupsh stats site - Show site-wide statistics
  */
 
 import { Command } from "commander";

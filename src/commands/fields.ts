@@ -2,8 +2,8 @@
  * Field management commands
  *
  * Commands:
- * - bento fields list - List all custom fields
- * - bento fields create <key> - Create a new custom field
+ * - gupsh fields list - List all custom fields
+ * - gupsh fields create <key> - Create a new custom field
  */
 
 import { Command } from "commander";
@@ -35,7 +35,7 @@ export function registerFieldsCommands(program: Command): void {
             });
           } else {
             output.info(
-              "No custom fields found. Create one with `bento fields create <key>`"
+              "No custom fields found. Create one with `gupsh fields create <key>`"
             );
           }
           return;

@@ -72,9 +72,12 @@ export class CLIError extends Error {
 export class BentoClient {
   private sdk: Analytics | null = null;
   private profile: BentoProfile | null = null;
-  private readonly apiBaseUrl = BentoClient.validateApiBaseUrl(
-    process.env.BENTO_API_BASE_URL ?? "https://app.bentonow.com/api/v1"
-  );
+  private resolveApiBaseUrl(profile?: Pick<BentoProfile, "apiBaseUrl">): string {
+    return BentoClient.validateApiBaseUrl(
+      process.env.GUPSH_API_BASE_URL ?? process.env.BENTO_API_BASE_URL ??
+      profile?.apiBaseUrl ?? "https://api.gupsh.app/api/v1"
+    );
+  }
 
   /**
    * Get or create SDK instance with current profile credentials
@@ -86,7 +89,7 @@ export class BentoClient {
 
     const currentProfile = await config.getCurrentProfile();
     if (!currentProfile) {
-      throw new CLIError("Not authenticated. Run 'bento auth login' first.", "AUTH_REQUIRED");
+      throw new CLIError("Not authenticated. Run 'gupsh auth login' first.", "AUTH_REQUIRED");
     }
 
     this.profile = currentProfile;
@@ -97,6 +100,7 @@ export class BentoClient {
         secretKey: currentProfile.secretKey,
       },
       logErrors: process.env.DEBUG?.includes("bento"),
+      clientOptions: { baseUrl: this.resolveApiBaseUrl(currentProfile) },
     });
 
     return this.sdk;
@@ -110,7 +114,8 @@ export class BentoClient {
   async validateCredentials(
     publishableKey: string,
     secretKey: string,
-    siteUuid: string
+    siteUuid: string,
+    apiBaseUrl?: string
   ): Promise<boolean> {
     try {
       const tempSdk = new Analytics({
@@ -119,6 +124,7 @@ export class BentoClient {
           publishableKey,
           secretKey,
         },
+        clientOptions: { baseUrl: this.resolveApiBaseUrl({ apiBaseUrl }) },
       });
 
       // Make a lightweight API call to validate credentials
@@ -331,7 +337,7 @@ export class BentoClient {
 
     if (!match?.id) {
       throw new CLIError(
-        `Tag "${trimmedName}" not found. Run 'bento tags list' to inspect available tags.`,
+        `Tag "${trimmedName}" not found. Run 'gupsh tags list' to inspect available tags.`,
         "NOT_FOUND",
         404
       );
@@ -640,7 +646,7 @@ export class BentoClient {
   ): Promise<EmailTemplate | null> {
     if (!isSequenceId(sequenceId)) {
       throw new CLIError(
-        "Sequence ID must be the non-empty id returned by 'bento sequences list'.",
+        "Sequence ID must be the non-empty id returned by 'gupsh sequences list'.",
         "VALIDATION_ERROR",
         422
       );
@@ -726,7 +732,7 @@ export class BentoClient {
     if (result.reason === "not_found") {
       const label = sequenceName ?? result.sequenceName ?? "sequence";
       throw new CLIError(
-        `Sequence "${label}" not found. Run 'bento sequences list --json' to inspect available sequences.`,
+        `Sequence "${label}" not found. Run 'gupsh sequences list --json' to inspect available sequences.`,
         "NOT_FOUND",
         404
       );
@@ -734,7 +740,7 @@ export class BentoClient {
 
     const label = sequenceName ?? result.sequenceName ?? "sequence";
     throw new CLIError(
-      `Sequence "${label}" was found but the API response did not include an id. Run 'bento sequences list --json' and use --sequence-id with the listed id.`,
+      `Sequence "${label}" was found but the API response did not include an id. Run 'gupsh sequences list --json' and use --sequence-id with the listed id.`,
       "VALIDATION_ERROR",
       422
     );
@@ -762,7 +768,7 @@ export class BentoClient {
     // Handle SDK-specific error types
     if (error instanceof NotAuthorizedError) {
       return new CLIError(
-        "Authentication failed: Invalid API key or insufficient permissions. Run 'bento auth login' to re-authenticate.",
+        "Authentication failed: Invalid API key or insufficient permissions. Run 'gupsh auth login' to re-authenticate.",
         "AUTH_FAILED",
         401
       );
@@ -791,7 +797,7 @@ export class BentoClient {
       // Check for common HTTP status codes in error messages
       if (message.includes("401") || message.includes("unauthorized")) {
         return new CLIError(
-          "Authentication failed: Invalid API key or expired credentials. Run 'bento auth login' to re-authenticate.",
+          "Authentication failed: Invalid API key or expired credentials. Run 'gupsh auth login' to re-authenticate.",
           "AUTH_FAILED",
           401
         );
@@ -841,7 +847,7 @@ export class BentoClient {
     }
 
     if (!this.profile) {
-      throw new CLIError("Not authenticated. Run 'bento auth login' first.", "AUTH_REQUIRED");
+      throw new CLIError("Not authenticated. Run 'gupsh auth login' first.", "AUTH_REQUIRED");
     }
 
     return this.profile;
@@ -852,7 +858,7 @@ export class BentoClient {
     query: Record<string, string | number | undefined> = {}
   ): Promise<T> {
     const profile = await this.ensureProfileLoaded();
-    const url = new URL(`${this.apiBaseUrl}${path}`);
+    const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
     url.searchParams.set("site_uuid", profile.siteUuid);
 
     for (const [key, value] of Object.entries(query)) {
@@ -873,13 +879,13 @@ export class BentoClient {
     try {
       return (await response.json()) as T;
     } catch {
-      throw new CLIError("Invalid JSON response from Bento API.", "API_ERROR", response.status);
+      throw new CLIError("Invalid JSON response from gupsh API.", "API_ERROR", response.status);
     }
   }
 
   private async apiDelete<T>(path: string, payload: Record<string, unknown>): Promise<T> {
     const profile = await this.ensureProfileLoaded();
-    const url = new URL(`${this.apiBaseUrl}${path}`);
+    const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
     const body = {
       ...payload,
       site_uuid: profile.siteUuid,
@@ -902,13 +908,13 @@ export class BentoClient {
     try {
       return (await response.json()) as T;
     } catch {
-      throw new CLIError("Invalid JSON response from Bento API.", "API_ERROR", response.status);
+      throw new CLIError("Invalid JSON response from gupsh API.", "API_ERROR", response.status);
     }
   }
 
   private async apiPost<T>(path: string, payload: Record<string, unknown>): Promise<T> {
     const profile = await this.ensureProfileLoaded();
-    const url = new URL(`${this.apiBaseUrl}${path}`);
+    const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
     const body = {
       ...payload,
       site_uuid: profile.siteUuid,
@@ -931,7 +937,7 @@ export class BentoClient {
     try {
       return (await response.json()) as T;
     } catch {
-      throw new CLIError("Invalid JSON response from Bento API.", "API_ERROR", response.status);
+      throw new CLIError("Invalid JSON response from gupsh API.", "API_ERROR", response.status);
     }
   }
 
@@ -940,7 +946,7 @@ export class BentoClient {
 
     return {
       Authorization: `Basic ${token}`,
-      "User-Agent": `bento-cli/${profile.siteUuid}`,
+      "User-Agent": `gupsh-cli/${profile.siteUuid}`,
       Accept: "application/json",
     };
   }
@@ -949,7 +955,7 @@ export class BentoClient {
     switch (status) {
       case 401:
         return new CLIError(
-          "Authentication failed: Invalid credentials. Run 'bento auth login' to re-authenticate.",
+          "Authentication failed: Invalid credentials. Run 'gupsh auth login' to re-authenticate.",
           "AUTH_FAILED",
           status
         );
@@ -972,7 +978,7 @@ export class BentoClient {
       default:
         if (status >= 500) {
           return new CLIError(
-            "The Bento API returned a server error. This is usually temporary — please try again in a few moments.",
+            "The gupsh API returned a server error. This is usually temporary — please try again in a few moments.",
             "API_ERROR",
             status
           );
@@ -981,26 +987,38 @@ export class BentoClient {
     }
   }
 
-  private static validateApiBaseUrl(baseUrl: string): string {
+  static validateApiBaseUrl(baseUrl: string): string {
     try {
       const parsed = new URL(baseUrl);
-      const isLocalHost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
-      const isBentoHost =
-        parsed.hostname.endsWith(".bentonow.com") || parsed.hostname === "bentonow.com";
+      const isLocalHost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]" || parsed.hostname.endsWith(".localhost");
       const hasAllowedProtocol =
         parsed.protocol === "https:" || (isLocalHost && parsed.protocol === "http:");
 
-      if (!hasAllowedProtocol || (!isLocalHost && !isBentoHost)) {
-        throw new Error("Invalid BENTO_API_BASE_URL host");
+      if (!hasAllowedProtocol || !parsed.hostname || parsed.username || parsed.password) {
+        throw new Error("Invalid API base URL");
       }
 
+      if (parsed.pathname === "/") parsed.pathname = "/api/v1";
       return parsed.toString().replace(/\/$/, "");
     } catch {
       throw new CLIError(
-        "Invalid BENTO_API_BASE_URL. Use https://*.bentonow.com (or http://localhost for local development).",
+        "Invalid API base URL. Use https://… (http is allowed for localhost only).",
         "VALIDATION_ERROR",
         422
       );
+    }
+  }
+
+  static validateDashboardUrl(value: string): string {
+    try {
+      const parsed = new URL(value);
+      const isLocalHost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]" || parsed.hostname.endsWith(".localhost");
+      if ((parsed.protocol !== "https:" && !(isLocalHost && parsed.protocol === "http:")) || !parsed.hostname || parsed.username || parsed.password) {
+        throw new Error("Invalid dashboard URL");
+      }
+      return parsed.toString();
+    } catch {
+      throw new CLIError("Invalid dashboard URL. Use https://… (http is allowed for localhost only).", "VALIDATION_ERROR", 422);
     }
   }
 }
@@ -1064,9 +1082,10 @@ export const bento = new BentoClient();
 export async function validateCredentials(
   publishableKey: string,
   secretKey: string,
-  siteUuid: string
+  siteUuid: string,
+  apiBaseUrl?: string
 ): Promise<boolean> {
-  return new BentoClient().validateCredentials(publishableKey, secretKey, siteUuid);
+  return new BentoClient().validateCredentials(publishableKey, secretKey, siteUuid, apiBaseUrl);
 }
 
 // Re-export CLIError for commands to use

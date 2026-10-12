@@ -2,8 +2,8 @@
  * Sequence commands
  *
  * Commands:
- * - bento sequences list - List all sequences
- * - bento sequences create-email - Create an email template in a sequence
+ * - gupsh sequences list - List all sequences
+ * - gupsh sequences create-email - Create an email template in a sequence
  */
 
 import { readFile } from "node:fs/promises";
@@ -95,7 +95,7 @@ export function registerSequencesCommands(program: Command): void {
   sequences
     .command("create-email")
     .description("Append a new email template to a sequence")
-    .option("--sequence-id <id>", "Sequence ID from 'bento sequences list'")
+    .option("--sequence-id <id>", "Sequence ID from 'gupsh sequences list'")
     .option("--sequence-name <name>", "Sequence name (exact match, case-insensitive)")
     .requiredOption("--subject <subject>", "Email subject line")
     .option("--html <html>", "Email HTML content")
