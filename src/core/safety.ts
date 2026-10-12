@@ -282,7 +282,7 @@ export class Safety {
   }
 
   private autoConfirmEnabled(): boolean {
-    return isTruthyEnv(process.env[AUTO_CONFIRM_ENV]);
+    return isTruthyEnv(process.env.GUPSH_AUTO_CONFIRM) || isTruthyEnv(process.env[AUTO_CONFIRM_ENV]);
   }
 }
 

@@ -4,8 +4,6 @@ import { config } from "../core/config";
 import { output } from "../core/output";
 import { openInBrowser, BrowserOpenError } from "../utils/browser";
 
-const DASHBOARD_BASE_URL = process.env.BENTO_DASHBOARD_URL ?? "https://app.bentonow.com/";
-
 interface DashboardCommandOptions {
   profile?: string;
 }
@@ -13,6 +11,7 @@ interface DashboardCommandOptions {
 interface ProfileContext {
   name: string;
   siteUuid: string;
+  dashboardUrl?: string;
 }
 
 export function registerDashboardCommand(program: Command): void {
@@ -23,7 +22,7 @@ export function registerDashboardCommand(program: Command): void {
     .action(async (options: DashboardCommandOptions) => {
       try {
         const profileContext = await resolveProfile(options.profile);
-        const url = buildDashboardUrl(profileContext?.siteUuid);
+        const url = buildDashboardUrl(profileContext?.siteUuid, profileContext?.dashboardUrl);
 
         await openInBrowser(url);
 
@@ -46,10 +45,10 @@ export function registerDashboardCommand(program: Command): void {
         }
 
         if (profileContext) {
-          output.success(`Opening Bento dashboard for "${profileContext.name}" in your browser...`);
+          output.success(`Opening gupsh dashboard for "${profileContext.name}" in your browser...`);
         } else {
-          output.success("Opening the Bento dashboard login page in your browser...");
-          output.info("No active profile is selected. Run 'bento auth login' to connect a site.");
+          output.success("Opening the gupsh dashboard login page in your browser...");
+          output.info("No active profile is selected. Run 'gupsh auth login' to connect a site.");
         }
       } catch (error) {
         handleDashboardError(error);
@@ -62,12 +61,13 @@ async function resolveProfile(profileName?: string): Promise<ProfileContext | nu
     const profile = await config.getProfile(profileName);
     if (!profile) {
       throw new Error(
-        `Profile "${profileName}" not found. Use 'bento profile list' to view configured profiles.`
+        `Profile "${profileName}" not found. Use 'gupsh profile list' to view configured profiles.`
       );
     }
     return {
       name: profileName,
       siteUuid: profile.siteUuid,
+      dashboardUrl: profile.dashboardUrl,
     };
   }
 
@@ -80,11 +80,12 @@ async function resolveProfile(profileName?: string): Promise<ProfileContext | nu
   return {
     name: currentName,
     siteUuid: profile.siteUuid,
+    dashboardUrl: profile.dashboardUrl,
   };
 }
 
-function buildDashboardUrl(siteUuid?: string): string {
-  const url = new URL(DASHBOARD_BASE_URL);
+function buildDashboardUrl(siteUuid?: string, dashboardUrl?: string): string {
+  const url = new URL(process.env.GUPSH_DASHBOARD_URL ?? process.env.BENTO_DASHBOARD_URL ?? dashboardUrl ?? "https://app.gupsh.app/marketing/overview");
   if (siteUuid) {
     url.searchParams.set("site_uuid", siteUuid);
   }
@@ -112,5 +113,5 @@ function formatErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Unable to open the Bento dashboard.";
+  return "Unable to open the gupsh dashboard.";
 }

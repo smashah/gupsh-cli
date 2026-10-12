@@ -2,22 +2,24 @@
  * Profile management commands
  *
  * Commands:
- * - bento profile add <name> - Add a new profile
- * - bento profile list - List all profiles
- * - bento profile use <name> - Switch to a profile
- * - bento profile remove <name> - Remove a profile
+ * - gupsh profile add <name> - Add a new profile
+ * - gupsh profile list - List all profiles
+ * - gupsh profile use <name> - Switch to a profile
+ * - gupsh profile remove <name> - Remove a profile
  */
 
 import { Command } from "commander";
 import { password, input, confirm } from "@inquirer/prompts";
 import { config, ConfigError } from "../core/config";
-import { validateCredentials, bento } from "../core/sdk";
+import { validateCredentials, bento, BentoClient } from "../core/sdk";
 import { output } from "../core/output";
 
 interface AddOptions {
   publishableKey?: string;
   secretKey?: string;
   siteUuid?: string;
+  apiUrl?: string;
+  dashboardUrl?: string;
 }
 
 export function registerProfileCommands(program: Command): void {
@@ -32,13 +34,15 @@ export function registerProfileCommands(program: Command): void {
     .option("--publishable-key <key>", "Publishable key (for non-interactive use)")
     .option("--secret-key <key>", "Secret key (for non-interactive use)")
     .option("--site-uuid <uuid>", "Site UUID (for non-interactive use)")
+    .option("--api-url <url>", "API base URL for this profile")
+    .option("--dashboard-url <url>", "Dashboard URL for this profile")
     .action(async (name: string, options: AddOptions) => {
       try {
         // Check if profile already exists
         const exists = await config.hasProfile(name);
         if (exists) {
           output.error(
-            `Profile "${name}" already exists. Use 'bento auth login --profile ${name}' to update it.`
+            `Profile "${name}" already exists. Use 'gupsh auth login --profile ${name}' to update it.`
           );
           process.exit(1);
         }
@@ -58,8 +62,10 @@ export function registerProfileCommands(program: Command): void {
           }
 
           output.info(`Creating profile "${name}"`);
-          output.log("Find your credentials at: https://app.bentonow.com/account/teams");
+          output.log("Find your credentials at: https://app.gupsh.app/marketing/settings");
           output.newline();
+
+          options.apiUrl = await input({ message: "API base URL:", default: options.apiUrl ?? "https://api.gupsh.app/api/v1" });
 
           if (!publishableKey) {
             publishableKey = await password({
@@ -104,7 +110,9 @@ export function registerProfileCommands(program: Command): void {
 
         // Validate credentials against API
         output.startSpinner("Validating credentials...");
-        const isValid = await validateCredentials(publishableKey, secretKey, siteUuid);
+        const apiBaseUrl = options.apiUrl ? BentoClient.validateApiBaseUrl(options.apiUrl) : undefined;
+        const dashboardUrl = options.dashboardUrl ? BentoClient.validateDashboardUrl(options.dashboardUrl) : undefined;
+        const isValid = await validateCredentials(publishableKey, secretKey, siteUuid, apiBaseUrl);
 
         if (!isValid) {
           output.failSpinner("Invalid credentials");
@@ -117,7 +125,7 @@ export function registerProfileCommands(program: Command): void {
         output.stopSpinner("Credentials validated");
 
         // Save to config
-        await config.setProfile(name, { publishableKey, secretKey, siteUuid });
+        await config.setProfile(name, { publishableKey, secretKey, siteUuid, apiBaseUrl, dashboardUrl });
 
         if (output.isJson()) {
           output.json({
@@ -161,7 +169,7 @@ export function registerProfileCommands(program: Command): void {
             });
           } else {
             output.info(
-              "No profiles configured. Run 'bento auth login' to create one."
+              "No profiles configured. Run 'gupsh auth login' to create one."
             );
           }
           return;
@@ -297,7 +305,7 @@ export function registerProfileCommands(program: Command): void {
           output.success(`Profile "${name}" removed`);
           if (wasCurrentProfile) {
             output.info(
-              "This was the active profile. Run 'bento auth login' or 'bento profile use <name>' to authenticate."
+              "This was the active profile. Run 'gupsh auth login' or 'gupsh profile use <name>' to authenticate."
             );
           }
         }

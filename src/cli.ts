@@ -5,6 +5,11 @@ import { registerAuthCommands } from "./commands/auth";
 import { registerBroadcastsCommands } from "./commands/broadcasts";
 import { registerDashboardCommand } from "./commands/dashboard";
 import { registerEventsCommands } from "./commands/events";
+import { registerEmailsCommands } from "./commands/emails";
+import { registerTemplatesCommands } from "./commands/templates";
+import { registerWorkflowsCommands } from "./commands/workflows";
+import { registerFormsCommands } from "./commands/forms";
+import { registerExperimentalCommands } from "./commands/experimental";
 import { registerFieldsCommands } from "./commands/fields";
 import { registerProfileCommands } from "./commands/profile";
 import { registerSequencesCommands } from "./commands/sequences";
@@ -17,11 +22,11 @@ import { config } from "./core/config";
 const program = new Command();
 
 program
-  .name("bento")
+  .name("gupsh")
   .description(
-    "Bento CLI - Command-oriented interface for Bento email marketing"
+    "gupsh CLI - Command-oriented interface for gupsh email marketing"
   )
-  .version("0.1.1")
+  .version("0.1.6")
   .option("--json", "Output machine-readable JSON")
   .option("--quiet", "Suppress non-essential output (errors still print)")
   .hook("preAction", (thisCommand) => {
@@ -50,6 +55,11 @@ registerSubscribersCommands(program);
 registerTagsCommands(program);
 registerFieldsCommands(program);
 registerEventsCommands(program);
+registerEmailsCommands(program);
+registerTemplatesCommands(program);
+registerWorkflowsCommands(program);
+registerFormsCommands(program);
+registerExperimentalCommands(program);
 registerBroadcastsCommands(program);
 registerSequencesCommands(program);
 registerStatsCommands(program);
@@ -95,21 +105,14 @@ function configureOutputMode(options: { json?: boolean; quiet?: boolean }): void
 }
 
 async function showWelcomeScreen(): Promise<void> {
-  const version = "0.1.1";
+  const version = "0.1.6";
   
-  // Bento brand color (purple)
+  // gupsh brand color
   const brand = chalk.hex("#8B5CF6");
   const dim = chalk.dim;
   const bold = chalk.bold;
   
-  const logo = `
-  ${brand("██████╗ ███████╗███╗   ██╗████████╗ ██████╗ ")}
-  ${brand("██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██╔═══██╗")}
-  ${brand("██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║   ██║")}
-  ${brand("██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║   ██║")}
-  ${brand("██████╔╝███████╗██║ ╚████║   ██║   ╚██████╔╝")}
-  ${brand("╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ")}
-`;
+  const logo = brand("gupsh");
 
   console.log(logo);
   console.log(`  ${dim("Email marketing from your terminal")}           ${dim(`v${version}`)}`);
@@ -131,15 +134,15 @@ async function showWelcomeScreen(): Promise<void> {
   console.log(`  ${authStatus}`);
   console.log();
   console.log(`  ${bold("Quick Start")}`);
-  console.log(`  ${dim("$")} bento auth login          ${dim("Authenticate with Bento")}`);
-  console.log(`  ${dim("$")} bento stats site          ${dim("View your site statistics")}`);
-  console.log(`  ${dim("$")} bento dashboard           ${dim("Open the Bento web dashboard")}`);
-  console.log(`  ${dim("$")} bento subscribers search  ${dim("Search your subscribers")}`);
-  console.log(`  ${dim("$")} bento tags list           ${dim("List all tags")}`);
+  console.log(`  ${dim("$")} gupsh auth login          ${dim("Authenticate with Bento")}`);
+  console.log(`  ${dim("$")} gupsh stats site          ${dim("View your site statistics")}`);
+  console.log(`  ${dim("$")} gupsh dashboard           ${dim("Open the gupsh web dashboard")}`);
+  console.log(`  ${dim("$")} gupsh subscribers search  ${dim("Search your subscribers")}`);
+  console.log(`  ${dim("$")} gupsh tags list           ${dim("List all tags")}`);
   console.log();
   console.log(`  ${bold("All Commands")}`);
-  console.log(`  ${dim("$")} bento --help              ${dim("Show all available commands")}`);
+  console.log(`  ${dim("$")} gupsh --help              ${dim("Show all available commands")}`);
   console.log();
-  console.log(`  ${dim("Documentation:")} ${chalk.cyan("https://docs.bentonow.com")}`);
+  console.log(`  ${dim("Documentation:")} ${chalk.cyan("https://github.com/smashah/gupsh-cli#readme")}`);
   console.log();
 }

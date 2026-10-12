@@ -1,17 +1,18 @@
 {
-  "name": "@bentonow/bento-cli",
+  "name": "@gupsh/cli",
   "version": "0.1.6",
-  "description": "Command-line interface for Bento email marketing. Manage subscribers, tags, events, and broadcasts from your terminal.",
+  "description": "Command-line interface for gupsh email marketing.",
   "type": "module",
   "bin": {
-    "bento": "./bin/bento"
+    "gupsh": "./bin/gupsh"
   },
   "files": [
     "bin",
     "dist",
     "skill",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "NOTICE"
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
@@ -41,14 +42,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bentonow/bento-cli.git"
+    "url": "git+https://github.com/smashah/gupsh-cli.git"
   },
-  "homepage": "https://github.com/bentonow/bento-cli#readme",
+  "homepage": "https://github.com/smashah/gupsh-cli#readme",
   "bugs": {
-    "url": "https://github.com/bentonow/bento-cli/issues"
+    "url": "https://github.com/smashah/gupsh-cli/issues"
   },
   "keywords": [
-    "bento",
+    "gupsh",
     "email",
     "marketing",
     "cli",
@@ -58,8 +59,7 @@
     "email-marketing"
   ],
   "author": {
-    "name": "Zachary Oakes",
-    "email": "zachary.oakes@gmail.com"
+    "name": "Gupsh contributors"
   },
   "contributors": [
     {
@@ -71,5 +71,9 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "gupsh": {
+    "upstream": "@bentonow/bento-cli@0.1.6",
+    "upstreamCommit": "183a3a2b02d3941b911ac9c1aca56a7bafd057c1"
   }
 }

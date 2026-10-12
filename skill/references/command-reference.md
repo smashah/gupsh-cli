@@ -1,6 +1,6 @@
-# Bento CLI Command Reference
+# gupsh CLI Command Reference
 
-Complete reference for all Bento CLI commands with options and examples.
+Complete reference for all gupsh CLI commands with options and examples.
 
 ## Global Options
 
@@ -18,20 +18,20 @@ Authentication management commands.
 
 ### auth login
 
-Authenticate with Bento API credentials.
+Authenticate with gupsh API credentials.
 
 ```bash
 # Interactive (prompts for credentials)
-bento auth login
+gupsh auth login
 
 # Non-interactive (all flags required)
-bento auth login \
+gupsh auth login \
   --publishable-key <key> \
   --secret-key <key> \
   --site-uuid <uuid>
 
 # With custom profile name
-bento auth login --profile production \
+gupsh auth login --profile production \
   --publishable-key <key> \
   --secret-key <key> \
   --site-uuid <uuid>
@@ -40,9 +40,9 @@ bento auth login --profile production \
 **Options**:
 | Option | Description |
 |--------|-------------|
-| `--publishable-key <key>` | Bento publishable API key |
-| `--secret-key <key>` | Bento secret API key |
-| `--site-uuid <uuid>` | Bento site UUID |
+| `--publishable-key <key>` | gupsh publishable API key |
+| `--secret-key <key>` | gupsh secret API key |
+| `--site-uuid <uuid>` | gupsh site UUID |
 | `--profile <name>` | Profile name (default: "default") |
 
 ### auth status
@@ -50,8 +50,8 @@ bento auth login --profile production \
 Show current authentication status.
 
 ```bash
-bento auth status
-bento auth status --json
+gupsh auth status
+gupsh auth status --json
 ```
 
 ### auth logout
@@ -59,23 +59,23 @@ bento auth status --json
 Clear current authentication and remove profile.
 
 ```bash
-bento auth logout
-bento auth logout --json
+gupsh auth logout
+gupsh auth logout --json
 ```
 
 ---
 
 ## profile
 
-Manage multiple Bento account profiles.
+Manage multiple gupsh account profiles.
 
 ### profile add
 
 Add a new named profile (prompts for credentials).
 
 ```bash
-bento profile add production
-bento profile add staging
+gupsh profile add production
+gupsh profile add staging
 ```
 
 ### profile use
@@ -83,8 +83,8 @@ bento profile add staging
 Switch to a different profile.
 
 ```bash
-bento profile use staging
-bento profile use production
+gupsh profile use staging
+gupsh profile use production
 ```
 
 ### profile list
@@ -92,8 +92,8 @@ bento profile use production
 List all configured profiles.
 
 ```bash
-bento profile list
-bento profile list --json
+gupsh profile list
+gupsh profile list --json
 ```
 
 ### profile remove
@@ -101,7 +101,7 @@ bento profile list --json
 Remove a profile.
 
 ```bash
-bento profile remove staging
+gupsh profile remove staging
 ```
 
 ---
@@ -116,18 +116,18 @@ Search for subscribers with various filters.
 
 ```bash
 # By email
-bento subscribers search --email user@example.com
+gupsh subscribers search --email user@example.com
 
 # By tag
-bento subscribers search --tag vip
-bento subscribers search --tag active
+gupsh subscribers search --tag vip
+gupsh subscribers search --tag active
 
 # By custom field
-bento subscribers search --field plan=pro
-bento subscribers search --field company=Acme
+gupsh subscribers search --field plan=pro
+gupsh subscribers search --field company=Acme
 
 # Pagination
-bento subscribers search --tag vip --page 2 --per-page 50
+gupsh subscribers search --tag vip --page 2 --per-page 50
 ```
 
 **Options**:
@@ -145,21 +145,21 @@ Import subscribers from a CSV file.
 
 ```bash
 # Basic import (interactive confirmation)
-bento subscribers import contacts.csv
+gupsh subscribers import contacts.csv
 
 # Preview without making changes
-bento subscribers import contacts.csv --dry-run
+gupsh subscribers import contacts.csv --dry-run
 
 # Import first N rows only
-bento subscribers import contacts.csv --limit 100
+gupsh subscribers import contacts.csv --limit 100
 
 # Non-interactive (for scripts)
-bento subscribers import contacts.csv --confirm
+gupsh subscribers import contacts.csv --confirm
 
 # Full workflow
-bento subscribers import contacts.csv --dry-run           # 1. Preview
-bento subscribers import contacts.csv --limit 10 --confirm # 2. Test batch
-bento subscribers import contacts.csv --confirm           # 3. Full import
+gupsh subscribers import contacts.csv --dry-run           # 1. Preview
+gupsh subscribers import contacts.csv --limit 10 --confirm # 2. Test batch
+gupsh subscribers import contacts.csv --confirm           # 3. Full import
 ```
 
 **Options**:
@@ -189,13 +189,13 @@ Add or remove tags from subscribers.
 
 ```bash
 # Single subscriber
-bento subscribers tag --email user@example.com --add vip
-bento subscribers tag --email user@example.com --remove trial
-bento subscribers tag --email user@example.com --add vip,premium --remove trial
+gupsh subscribers tag --email user@example.com --add vip
+gupsh subscribers tag --email user@example.com --remove trial
+gupsh subscribers tag --email user@example.com --add vip,premium --remove trial
 
 # Bulk from CSV
-bento subscribers tag --file users.csv --add customer --confirm
-bento subscribers tag --file users.csv --add customer,active --dry-run
+gupsh subscribers tag --file users.csv --add customer --confirm
+gupsh subscribers tag --file users.csv --add customer,active --dry-run
 ```
 
 **Options**:
@@ -214,11 +214,11 @@ Unsubscribe subscribers (stop email delivery).
 
 ```bash
 # Single subscriber
-bento subscribers unsubscribe --email user@example.com
+gupsh subscribers unsubscribe --email user@example.com
 
 # Bulk from CSV
-bento subscribers unsubscribe --file unsubscribes.csv --dry-run
-bento subscribers unsubscribe --file unsubscribes.csv --confirm
+gupsh subscribers unsubscribe --file unsubscribes.csv --dry-run
+gupsh subscribers unsubscribe --file unsubscribes.csv --confirm
 ```
 
 **Options**:
@@ -234,7 +234,7 @@ bento subscribers unsubscribe --file unsubscribes.csv --confirm
 Re-subscribe a previously unsubscribed subscriber.
 
 ```bash
-bento subscribers subscribe --email user@example.com
+gupsh subscribers subscribe --email user@example.com
 ```
 
 ---
@@ -248,8 +248,8 @@ Tag management commands.
 List all tags in the account.
 
 ```bash
-bento tags list
-bento tags list --json
+gupsh tags list
+gupsh tags list --json
 ```
 
 ### tags create
@@ -257,9 +257,9 @@ bento tags list --json
 Create a new tag.
 
 ```bash
-bento tags create "new-feature-announcement"
-bento tags create newsletter
-bento tags create "customer-tier-gold"
+gupsh tags create "new-feature-announcement"
+gupsh tags create newsletter
+gupsh tags create "customer-tier-gold"
 ```
 
 ### tags delete
@@ -267,7 +267,7 @@ bento tags create "customer-tier-gold"
 Delete a tag.
 
 ```bash
-bento tags delete "old-tag" --confirm
+gupsh tags delete "old-tag" --confirm
 ```
 
 **Note**: Tag deletion may have API limitations. Check the output for details.
@@ -283,8 +283,8 @@ Custom field management commands.
 List all custom fields.
 
 ```bash
-bento fields list
-bento fields list --json
+gupsh fields list
+gupsh fields list --json
 ```
 
 ### fields create
@@ -292,8 +292,8 @@ bento fields list --json
 Create a new custom field.
 
 ```bash
-bento fields create company_size
-bento fields create plan_type
+gupsh fields create company_size
+gupsh fields create plan_type
 ```
 
 ---
@@ -308,16 +308,16 @@ Track a custom event for a subscriber.
 
 ```bash
 # Simple event
-bento events track --email user@example.com --event signed_up
+gupsh events track --email user@example.com --event signed_up
 
 # Event with details (JSON)
-bento events track \
+gupsh events track \
   --email user@example.com \
   --event purchase \
   --details '{"product": "Pro Plan", "amount": 99}'
 
 # Event with complex details
-bento events track \
+gupsh events track \
   --email user@example.com \
   --event order_completed \
   --details '{"order_id": "12345", "items": ["SKU001", "SKU002"], "total": 149.99}'
@@ -341,8 +341,8 @@ Broadcast management commands.
 List all broadcasts.
 
 ```bash
-bento broadcasts list
-bento broadcasts list --json
+gupsh broadcasts list
+gupsh broadcasts list --json
 ```
 
 ### broadcasts create
@@ -350,7 +350,7 @@ bento broadcasts list --json
 Create a new broadcast draft.
 
 ```bash
-bento broadcasts create \
+gupsh broadcasts create \
   --name "January Newsletter" \
   --subject "What's new this month" \
   --content "<h1>Hello!</h1><p>Here's our update...</p>" \
@@ -379,6 +379,6 @@ Statistics commands.
 View site-wide statistics.
 
 ```bash
-bento stats site
-bento stats site --json
+gupsh stats site
+gupsh stats site --json
 ```

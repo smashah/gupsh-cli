@@ -2,15 +2,15 @@
  * Authentication commands
  *
  * Commands:
- * - bento auth login [--profile <name>] - Authenticate with Bento API
- * - bento auth logout - Clear current authentication
- * - bento auth status - Show current authentication status
+ * - gupsh auth login [--profile <name>] - Authenticate with Bento API
+ * - gupsh auth logout - Clear current authentication
+ * - gupsh auth status - Show current authentication status
  */
 
 import { Command } from "commander";
 import { password, input } from "@inquirer/prompts";
 import { config, ConfigError } from "../core/config";
-import { validateCredentials, bento } from "../core/sdk";
+import { validateCredentials, bento, BentoClient } from "../core/sdk";
 import { output } from "../core/output";
 
 interface LoginOptions {
@@ -18,6 +18,8 @@ interface LoginOptions {
   publishableKey?: string;
   secretKey?: string;
   siteUuid?: string;
+  apiUrl?: string;
+  dashboardUrl?: string;
 }
 
 export function registerAuthCommands(program: Command): void {
@@ -32,6 +34,8 @@ export function registerAuthCommands(program: Command): void {
     .option("--publishable-key <key>", "Publishable key (for non-interactive use)")
     .option("--secret-key <key>", "Secret key (for non-interactive use)")
     .option("--site-uuid <uuid>", "Site UUID (for non-interactive use)")
+    .option("--api-url <url>", "API base URL for this profile")
+    .option("--dashboard-url <url>", "Dashboard URL for this profile")
     .action(async (options: LoginOptions) => {
       try {
         let publishableKey = options.publishableKey;
@@ -64,9 +68,11 @@ export function registerAuthCommands(program: Command): void {
             process.exit(1);
           }
 
-          output.info("Authenticate with your Bento API credentials.");
-          output.log("Find your credentials at: https://app.bentonow.com/account/teams");
+          output.info("Authenticate with your gupsh API credentials.");
+          output.log("Find your credentials at: https://app.gupsh.app/marketing/settings");
           output.newline();
+
+          options.apiUrl = await input({ message: "API base URL:", default: options.apiUrl ?? "https://api.gupsh.app/api/v1" });
 
           if (!publishableKey) {
             publishableKey = await password({
@@ -95,7 +101,9 @@ export function registerAuthCommands(program: Command): void {
 
         // Validate credentials against API
         output.startSpinner("Validating credentials...");
-        const isValid = await validateCredentials(publishableKey, secretKey, siteUuid);
+        const apiBaseUrl = options.apiUrl ? BentoClient.validateApiBaseUrl(options.apiUrl) : undefined;
+        const dashboardUrl = options.dashboardUrl ? BentoClient.validateDashboardUrl(options.dashboardUrl) : undefined;
+        const isValid = await validateCredentials(publishableKey, secretKey, siteUuid, apiBaseUrl);
 
         if (!isValid) {
           output.failSpinner("Invalid credentials");
@@ -108,7 +116,7 @@ export function registerAuthCommands(program: Command): void {
         output.stopSpinner("Credentials validated");
 
         // Save to config
-        await config.setProfile(options.profile, { publishableKey, secretKey, siteUuid });
+        await config.setProfile(options.profile, { publishableKey, secretKey, siteUuid, apiBaseUrl, dashboardUrl });
         await config.useProfile(options.profile);
 
         // Reset the SDK client so it picks up the new credentials
@@ -207,7 +215,7 @@ export function registerAuthCommands(program: Command): void {
             });
           } else {
             output.info(
-              "Not authenticated. Run 'bento auth login' to authenticate."
+              "Not authenticated. Run 'gupsh auth login' to authenticate."
             );
           }
           return;
@@ -224,6 +232,8 @@ export function registerAuthCommands(program: Command): void {
               authenticated: true,
               profile: currentProfileName,
               siteUuid: currentProfile.siteUuid,
+              apiBaseUrl: currentProfile.apiBaseUrl ?? "https://api.gupsh.app/api/v1",
+              dashboardUrl: currentProfile.dashboardUrl ?? "https://app.gupsh.app/marketing/overview",
               publishableKey: maskedPublishableKey,
               secretKey: maskedSecretKey,
               createdAt: currentProfile.createdAt,
@@ -235,6 +245,8 @@ export function registerAuthCommands(program: Command): void {
           output.object({
             Profile: currentProfileName,
             "Site UUID": currentProfile.siteUuid,
+            "API base URL": currentProfile.apiBaseUrl ?? "https://api.gupsh.app/api/v1",
+            "Dashboard URL": currentProfile.dashboardUrl ?? "https://app.gupsh.app/marketing/overview",
             "Publishable Key": maskedPublishableKey,
             "Secret Key": maskedSecretKey,
             Created: formatDate(currentProfile.createdAt),

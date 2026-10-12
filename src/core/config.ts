@@ -8,9 +8,9 @@
  * - Secure file permissions (0600 on Unix)
  *
  * Config location (via env-paths):
- * - macOS: ~/Library/Application Support/bento/config.json
- * - Linux: ~/.config/bento/config.json
- * - Windows: %APPDATA%/bento/config.json
+ * - macOS: ~/Library/Application Support/gupsh/config.json
+ * - Linux: ~/.local/share/gupsh/config.json
+ * - Windows: %LOCALAPPDATA%/gupsh/data/config.json
  */
 
 import { mkdir, readFile, writeFile, chmod } from "node:fs/promises";
@@ -40,11 +40,10 @@ export class ConfigManager {
   constructor(configPath?: string) {
     if (configPath) {
       this.configPath = configPath;
-    } else if (process.env.BENTO_CONFIG_PATH) {
-      // Support config path override via environment variable (for testing)
-      this.configPath = process.env.BENTO_CONFIG_PATH;
+    } else if (process.env.GUPSH_CONFIG_PATH ?? process.env.BENTO_CONFIG_PATH) {
+      this.configPath = (process.env.GUPSH_CONFIG_PATH ?? process.env.BENTO_CONFIG_PATH)!;
     } else {
-      const paths = envPaths("bento", { suffix: "" });
+      const paths = envPaths("gupsh", { suffix: "" });
       // Use data path for Application Support on macOS (per spec)
       // env-paths.config returns ~/Library/Preferences on macOS
       // env-paths.data returns ~/Library/Application Support on macOS
@@ -241,14 +240,28 @@ export class ConfigManager {
    * Get the currently active profile
    */
   async getCurrentProfile(): Promise<BentoProfile | null> {
+    const publishableKey = process.env.GUPSH_PUBLISHABLE_KEY ?? process.env.BENTO_PUBLISHABLE_KEY;
+    const secretKey = process.env.GUPSH_SECRET_KEY ?? process.env.BENTO_SECRET_KEY;
+    const siteUuid = process.env.GUPSH_SITE_UUID ?? process.env.BENTO_SITE_UUID;
+    const envProfile: BentoProfile | null = publishableKey && secretKey && siteUuid ? {
+      publishableKey,
+      secretKey,
+      siteUuid,
+      apiBaseUrl: process.env.GUPSH_API_BASE_URL ?? process.env.BENTO_API_BASE_URL,
+      dashboardUrl: process.env.GUPSH_DASHBOARD_URL ?? process.env.BENTO_DASHBOARD_URL,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } : null;
+    if (process.env.GUPSH_USE_ENV_CREDENTIALS === "1" && envProfile) return envProfile;
+
     const config = await this.load();
 
     if (!config.current) {
-      return null;
+      return envProfile;
     }
 
     const profile = config.profiles[config.current];
-    return profile || null;
+    return profile || envProfile;
   }
 
   /**
@@ -291,6 +304,8 @@ export class ConfigManager {
       publishableKey: profile.publishableKey,
       secretKey: profile.secretKey,
       siteUuid: profile.siteUuid,
+      apiBaseUrl: profile.apiBaseUrl,
+      dashboardUrl: profile.dashboardUrl,
       createdAt: existingProfile?.createdAt || now,
       updatedAt: now,
     };
@@ -331,7 +346,7 @@ export class ConfigManager {
       const suggestion =
         available.length > 0
           ? ` Available profiles: ${available.join(", ")}`
-          : " No profiles configured. Run 'bento auth login' to create one.";
+          : " No profiles configured. Run 'gupsh auth login' to create one.";
 
       throw new ConfigError(
         `Profile '${name}' not found.${suggestion}`,

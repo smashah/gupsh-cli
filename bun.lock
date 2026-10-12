@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "@bentonow/bento-cli",
+      "name": "@gupsh/cli",
       "dependencies": {
         "@bentonow/bento-node-sdk": "2.0.0",
         "@inquirer/prompts": "8.2.0",
