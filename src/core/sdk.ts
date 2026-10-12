@@ -480,6 +480,46 @@ export class BentoClient {
     );
   }
 
+  async postEvents(events: Array<Record<string, unknown>>): Promise<unknown> {
+    return this.apiPost("/batch/events", { events });
+  }
+
+  async sendEmails(emails: Array<Record<string, unknown>>): Promise<unknown> {
+    return this.apiPost("/batch/emails", { emails });
+  }
+
+  async getEmailTemplate(id: string): Promise<unknown> {
+    return this.apiGet(`/fetch/emails/templates/${encodeURIComponent(id)}`);
+  }
+
+  async updateEmailTemplate(id: string, emailTemplate: { subject?: string; html?: string }): Promise<unknown> {
+    return this.apiPatch(`/fetch/emails/templates/${encodeURIComponent(id)}`, { email_template: emailTemplate });
+  }
+
+  async getWorkflows(): Promise<unknown> {
+    return this.apiGet("/fetch/workflows");
+  }
+
+  async getFormResponses(id: string): Promise<unknown> {
+    return this.apiGet("/fetch/responses", { id });
+  }
+
+  async getSegmentStats(id: string): Promise<unknown> {
+    return this.apiGet("/stats/segment", { segment_id: id });
+  }
+
+  async getReportStats(id: string): Promise<unknown> {
+    return this.apiGet("/stats/report", { report_id: id });
+  }
+
+  async experimentalGet(path: "blacklist" | "geolocation", query: Record<string, string>): Promise<unknown> {
+    return this.apiGet(`/experimental/${path}`, query, false);
+  }
+
+  async experimentalPost(path: "validation" | "gender" | "content_moderation", body: Record<string, string>): Promise<unknown> {
+    return this.apiPost(`/experimental/${path}`, body, false);
+  }
+
   // ============================================================
   // Stats Operations
   // ============================================================
@@ -855,11 +895,12 @@ export class BentoClient {
 
   private async apiGet<T>(
     path: string,
-    query: Record<string, string | number | undefined> = {}
+    query: Record<string, string | number | undefined> = {},
+    includeSite = true
   ): Promise<T> {
     const profile = await this.ensureProfileLoaded();
     const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
-    url.searchParams.set("site_uuid", profile.siteUuid);
+    if (includeSite) url.searchParams.set("site_uuid", profile.siteUuid);
 
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null) continue;
@@ -912,13 +953,10 @@ export class BentoClient {
     }
   }
 
-  private async apiPost<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+  private async apiPost<T>(path: string, payload: Record<string, unknown>, includeSite = true): Promise<T> {
     const profile = await this.ensureProfileLoaded();
     const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
-    const body = {
-      ...payload,
-      site_uuid: profile.siteUuid,
-    };
+    const body = includeSite ? { ...payload, site_uuid: profile.siteUuid } : payload;
 
     const response = await fetch(url, {
       method: "POST",
@@ -941,6 +979,20 @@ export class BentoClient {
     }
   }
 
+  private async apiPatch<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+    const profile = await this.ensureProfileLoaded();
+    const url = new URL(`${this.resolveApiBaseUrl(profile)}${path}`);
+    url.searchParams.set("site_uuid", profile.siteUuid);
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: { ...this.buildAuthHeaders(profile), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw this.createHttpError(response.status, await response.text());
+    try { return (await response.json()) as T; }
+    catch { throw new CLIError("Invalid JSON response from gupsh API.", "API_ERROR", response.status); }
+  }
+
   private buildAuthHeaders(profile: BentoProfile): Record<string, string> {
     const token = Buffer.from(`${profile.publishableKey}:${profile.secretKey}`).toString("base64");
 
@@ -960,6 +1012,9 @@ export class BentoClient {
           status
         );
       case 403:
+        if (message.includes("Author not authorized to send on this account")) {
+          return new CLIError("Author not authorized to send on this account", "AUTH_FAILED", status);
+        }
         return new CLIError(
           "Access denied: Your API key does not have permission for this operation.",
           "AUTH_FAILED",

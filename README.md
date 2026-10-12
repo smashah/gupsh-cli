@@ -21,6 +21,33 @@ The API URL resolves from `GUPSH_API_BASE_URL`, `BENTO_API_BASE_URL`, the select
 
 The fork keeps upstream commands, flags, JSON output, and exit codes, while changing the binary, default hosts, and profile-specific URLs.
 
+## Additional Bento-compatible commands
+
+```bash
+gupsh subscribers field set --email person@example.com --key plan --value pro
+gupsh subscribers field remove --email person@example.com --key plan
+gupsh subscribers field update --email person@example.com --fields '{"plan":"pro"}'
+gupsh subscribers change-email --old person@example.com --new new@example.com
+gupsh subscribers unsubscribe --email person@example.com --trigger-automations --dry-run
+gupsh events purchase --email person@example.com --amount 2500 --currency USD --key order-123 --cart '{"items":[]}'
+gupsh events import events.json
+gupsh emails send --to person@example.com --from sender@example.com --subject Hello --html-body '<p>Hello</p>' --dry-run
+gupsh emails send-batch --file emails.json --yes
+gupsh templates get 123
+gupsh templates update 123 --subject 'Updated subject' --html '<p>Updated</p>'
+gupsh workflows list
+gupsh forms responses 123
+gupsh stats segment 123
+gupsh stats report 123
+gupsh experimental validate-email person@example.com --ip 203.0.113.1 --name Person
+gupsh experimental guess-gender Alex
+gupsh experimental geolocate 203.0.113.1
+gupsh experimental blacklist --domain example.com
+gupsh experimental moderate 'Example text'
+```
+
+`events import` accepts an array of event objects (`email`, `type`, and optional `fields`, `details`, `date`). `emails send-batch` accepts an array of email objects (`to`, `from`, `subject`, `html_body`, and optional `personalizations`). Events use batches of 1,000 and emails use batches of 60. Both commands report each chunk's accepted count or error and continue after a failed chunk; they do not automatically replay an uncertain request. Sending mail and automation-triggering unsubscribe require confirmation, or `--yes` in scripts. `--dry-run` prints the planned request payloads and makes no API call. Add `--json` for machine-readable output.
+
 ---
 # gupsh CLI
 

@@ -9,11 +9,19 @@ import { Command } from "commander";
 import { bento, CLIError } from "../core/sdk";
 import { output } from "../core/output";
 import type { SiteStats } from "../types/sdk";
+import { fail, show } from "./extended-helpers";
 
 export function registerStatsCommands(program: Command): void {
   const stats = program
     .command("stats")
     .description("View site statistics");
+
+  stats.command("segment <id>").description("View segment statistics").action(async (id: string) => {
+    try { show(await bento.getSegmentStats(id)); } catch (error) { fail(error); }
+  });
+  stats.command("report <id>").description("View report statistics").action(async (id: string) => {
+    try { show(await bento.getReportStats(id)); } catch (error) { fail(error); }
+  });
 
   stats
     .command("site")

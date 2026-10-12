@@ -4,6 +4,7 @@ import { output } from "../../core/output";
 import { Safety, safety } from "../../core/safety";
 import { bento } from "../../core/sdk";
 import { handleSubscriberError, printCsvErrors, resolveEmailTargets } from "./helpers";
+import { approved, preview, show } from "../extended-helpers";
 
 interface UnsubscribeOptions {
   email?: string;
@@ -12,6 +13,8 @@ interface UnsubscribeOptions {
   limit?: string;
   sample?: string;
   confirm?: boolean;
+  triggerAutomations?: boolean;
+  yes?: boolean;
 }
 
 export function registerUnsubscribeCommand(subscribers: Command): void {
@@ -20,6 +23,8 @@ export function registerUnsubscribeCommand(subscribers: Command): void {
     .description("Unsubscribe subscribers (stop email delivery)")
     .option("-e, --email <email>", "Single email to unsubscribe")
     .option("-f, --file <file>", "CSV or newline list of subscriber emails");
+  command.option("--trigger-automations", "Unsubscribe through events and trigger automations")
+    .option("--yes", "Skip confirmation for automation-triggering unsubscribe");
 
   Safety.addFlags(command);
 
@@ -34,6 +39,16 @@ export function registerUnsubscribeCommand(subscribers: Command): void {
       if (targets.errors.length > 0) {
         printCsvErrors(targets.errors);
         process.exit(6);
+      }
+
+      if (opts.triggerAutomations) {
+        const bodies = targets.emails.map((email) => ({ events: [{ email, type: "$unsubscribe" }] }));
+        if (opts.dryRun) { await preview("/batch/events", bodies); return; }
+        if (!await approved("Unsubscribe with automations", targets.emails, opts.yes)) return;
+        const results: unknown[] = [];
+        for (const body of bodies) results.push(await bento.postEvents(body.events));
+        show({ recipients: targets.emails, results });
+        return;
       }
 
       await safety.protect<string, void>(
